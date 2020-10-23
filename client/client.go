@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"golang.org/x/oauth2/clientcredentials"
 	"net/http"
@@ -13,47 +12,48 @@ const (
 	APIUrl   string = "https://api.heficed.com"
 )
 
+var (
+	tenantId string
+)
+
 type Config struct {
-	TenantId     string
 	ClientId     string
 	ClientSecret string
-	Context      context.Context
+	TenantId     string
+	Scopes       []string
 }
 
-func (c *Config) Client() (*http.Client, error) {
+type Client struct {
+	*http.Client
+}
+
+func New(cfg Config, ctx context.Context) (*Client, error) {
 	conf := &clientcredentials.Config{
-		ClientID:       c.ClientId,
-		ClientSecret:   c.ClientSecret,
+		ClientID:       cfg.ClientId,
+		ClientSecret:   cfg.ClientSecret,
 		TokenURL:       TokenUrl,
 		Scopes:         []string{},
 		EndpointParams: nil,
 		AuthStyle:      0,
 	}
 
-	return conf.Client(c.Context), nil
+	tenantId = cfg.TenantId
+
+	return &Client{conf.Client(ctx)}, nil
 }
 
-func (c *Config) Request(method, path, body string) (interface{}, error) {
-	url := fmt.Sprintf("%s/%s/%s", APIUrl, c.TenantId, path)
+func (c *Client) Request(method, path, body string) (*http.Response, error) {
+	url := fmt.Sprintf("%s/%s/%s", APIUrl, tenantId, path)
 	var resp *http.Response
 	var err error
 	if method == "GET" {
-		client, err := c.Client()
+		resp, err = c.Get(url)
 		if err != nil {
 			return nil, err
 		}
-		resp, err = client.Get(url)
-		if err != nil {
-			return nil, err
-		}
-	}
-	var responseData map[string]json.RawMessage
-	err = json.NewDecoder(resp.Body).Decode(&responseData)
-	if err != nil {
-		return nil, err
 	}
 
 	//TODO: implement POST
 
-	return responseData, nil
+	return resp, nil
 }

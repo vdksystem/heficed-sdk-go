@@ -88,14 +88,16 @@ type Instance struct {
 
 func (p *protos) ListInstances() []Instance {
 	path := "/instances/premium"
-	resp := p.getRequest(path)
-
-	var responseData map[string]json.RawMessage
-	err := json.NewDecoder(resp.Body).Decode(&responseData)
+	resp, err := p.Request("GET", path, "")
 	if err != nil {
 		fmt.Println(err)
+		return nil
 	}
-
+	var responseData map[string]json.RawMessage
+	err = json.NewDecoder(resp.Body).Decode(&responseData)
+	if err != nil {
+		return nil
+	}
 	var instances []Instance
 	err = json.Unmarshal(responseData["data"], &instances)
 
@@ -103,10 +105,14 @@ func (p *protos) ListInstances() []Instance {
 }
 
 func (p *protos) GetInstance(id int) Instance {
-	path := fmt.Sprintf("/instances/premium/%d", id)
-	resp := p.getRequest(path)
 	var instance Instance
-	err := json.NewDecoder(resp.Body).Decode(&instance)
+	path := fmt.Sprintf("/instances/premium/%d", id)
+	resp, err := p.Request("GET", path, "")
+	if err != nil {
+		fmt.Println(err)
+		return instance
+	}
+	err = json.NewDecoder(resp.Body).Decode(&instance)
 	if err != nil {
 		fmt.Println(err)
 	}
