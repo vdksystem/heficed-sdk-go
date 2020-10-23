@@ -2,34 +2,58 @@ package client
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"golang.org/x/oauth2/clientcredentials"
 	"net/http"
 )
 
-const TokenUrl string = "https://iam-proxy.heficed.com/oauth2/token"
+const (
+	TokenUrl string = "https://iam-proxy.heficed.com/oauth2/token"
+	APIUrl   string = "https://api.heficed.com"
+)
 
 type Config struct {
+	TenantId     string
 	ClientId     string
 	ClientSecret string
-	Scopes       []string
+	Context      context.Context
 }
 
-type Client struct {
-	*http.Client
-}
-
-func New(cfg Config) (*Client, error) {
-	ctx := context.Background()
+func (c *Config) Client() (*http.Client, error) {
 	conf := &clientcredentials.Config{
-		ClientID:       cfg.ClientId,
-		ClientSecret:   cfg.ClientSecret,
+		ClientID:       c.ClientId,
+		ClientSecret:   c.ClientSecret,
 		TokenURL:       TokenUrl,
-		Scopes:         cfg.Scopes,
+		Scopes:         []string{},
 		EndpointParams: nil,
 		AuthStyle:      0,
 	}
 
-	c := Client{conf.Client(ctx)}
+	return conf.Client(c.Context), nil
+}
 
-	return &c, nil
+func (c *Config) Request(method, path, body string) (interface{}, error) {
+	url := fmt.Sprintf("%s/%s/%s", APIUrl, c.TenantId, path)
+	var resp *http.Response
+	var err error
+	if method == "GET" {
+		client, err := c.Client()
+		if err != nil {
+			return nil, err
+		}
+		resp, err = client.Get(url)
+		if err != nil {
+			return nil, err
+		}
+	}
+	var responseData map[string]json.RawMessage
+	err = json.NewDecoder(resp.Body).Decode(&responseData)
+	if err != nil {
+		return nil, err
+	}
+
+	//TODO: implement POST
+
+	return responseData, nil
 }
