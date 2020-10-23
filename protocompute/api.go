@@ -86,8 +86,8 @@ type Instance struct {
 	Eta            string `json:"eta"`
 }
 
-func (p *protos) ListInstances() []Instance {
-	path := "/instances/premium"
+func (p *Protos) ListInstances() []Instance {
+	path := APIPath + "/instances/premium"
 	resp, err := p.Request("GET", path, "")
 	if err != nil {
 		fmt.Println(err)
@@ -104,12 +104,12 @@ func (p *protos) ListInstances() []Instance {
 	return instances
 }
 
-func (p *protos) GetInstance(id int) Instance {
+func (p *Protos) GetInstance(id int) Instance {
 	var instance Instance
-	path := fmt.Sprintf("/instances/premium/%d", id)
+	path := fmt.Sprintf("%s/instances/premium/%d", APIPath, id)
 	resp, err := p.Request("GET", path, "")
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Error in GetInstance method", err)
 		return instance
 	}
 	err = json.NewDecoder(resp.Body).Decode(&instance)

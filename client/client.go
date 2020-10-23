@@ -32,7 +32,7 @@ func New(cfg Config, ctx context.Context) (*Client, error) {
 		ClientID:       cfg.ClientId,
 		ClientSecret:   cfg.ClientSecret,
 		TokenURL:       TokenUrl,
-		Scopes:         []string{},
+		Scopes:         cfg.Scopes,
 		EndpointParams: nil,
 		AuthStyle:      0,
 	}
@@ -44,16 +44,17 @@ func New(cfg Config, ctx context.Context) (*Client, error) {
 
 func (c *Client) Request(method, path, body string) (*http.Response, error) {
 	url := fmt.Sprintf("%s/%s/%s", APIUrl, tenantId, path)
-	var resp *http.Response
-	var err error
+	fmt.Println(url)
 	if method == "GET" {
-		resp, err = c.Get(url)
+		resp, err := c.Get(url)
 		if err != nil {
 			return nil, err
 		}
+
+		return resp, nil
 	}
 
 	//TODO: implement POST
 
-	return resp, nil
+	return nil, nil
 }

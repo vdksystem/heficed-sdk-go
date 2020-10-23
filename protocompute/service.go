@@ -6,6 +6,6 @@ import (
 
 const APIPath = "protocompute"
 
-type protos struct {
+type Protos struct {
 	*client.Client
 }
