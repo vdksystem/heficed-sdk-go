@@ -27,7 +27,7 @@ type Client struct {
 	*http.Client
 }
 
-func NewClient(cfg Config, ctx context.Context) (*Client, error) {
+func NewClient(cfg Config) (*Client, error) {
 	conf := &clientcredentials.Config{
 		ClientID:       cfg.ClientId,
 		ClientSecret:   cfg.ClientSecret,
@@ -39,7 +39,7 @@ func NewClient(cfg Config, ctx context.Context) (*Client, error) {
 
 	tenantId = cfg.TenantId
 
-	return &Client{conf.Client(ctx)}, nil
+	return &Client{conf.Client(context.Background())}, nil
 }
 
 func (c *Client) request(method, path, body string) (*http.Response, error) {
