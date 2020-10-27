@@ -1,4 +1,4 @@
-package client
+package heficed
 
 import (
 	"context"
@@ -27,7 +27,7 @@ type Client struct {
 	*http.Client
 }
 
-func New(cfg Config, ctx context.Context) (*Client, error) {
+func NewClient(cfg Config, ctx context.Context) (*Client, error) {
 	conf := &clientcredentials.Config{
 		ClientID:       cfg.ClientId,
 		ClientSecret:   cfg.ClientSecret,
@@ -42,7 +42,7 @@ func New(cfg Config, ctx context.Context) (*Client, error) {
 	return &Client{conf.Client(ctx)}, nil
 }
 
-func (c *Client) Request(method, path, body string) (*http.Response, error) {
+func (c *Client) request(method, path, body string) (*http.Response, error) {
 	url := fmt.Sprintf("%s/%s/%s", APIUrl, tenantId, path)
 	fmt.Println(url)
 	if method == "GET" {
