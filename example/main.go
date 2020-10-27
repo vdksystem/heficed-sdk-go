@@ -1,22 +1,28 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"github.com/vdksystem/heficed-sdk-go/heficed"
 	"log"
 	"os"
 )
 
+type createInstanceResponse struct {
+	Items []item `json:"items"`
+}
+
+type item struct {
+	InstanceId int `json:"instanceId"`
+}
+
 func main() {
-	ctx := context.Background()
 	cfg := heficed.Config{
 		ClientId:     os.Getenv("HEFICED_CLIENT_ID"),
 		ClientSecret: os.Getenv("HEFICED_CLIENT_SECRET"),
 		TenantId:     os.Getenv("HEFICED_TENANT_ID"),
 		Scopes:       []string{"protocompute"},
 	}
-	hfs, err := heficed.NewClient(cfg, ctx)
+	hfs, err := heficed.NewClient(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -25,6 +31,15 @@ func main() {
 
 	//r := protos.ListInstances()
 	//fmt.Println(r)
-	ins := protos.GetInstance(290982)
-	fmt.Println(ins)
+	//ins := protos.GetInstance(290982)
+	//fmt.Println(ins)
+
+	ps, err := protos.CreateInstance(heficed.NewInstance{
+		LocationId:    "de-fra1",
+		FlavorId:      "FRA-D016",
+		Hostname:      "worker3.eu-central-01.supresonic.nc",
+		BillingTypeId: 1,
+	})
+
+	fmt.Println(ps)
 }
